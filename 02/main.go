@@ -3,10 +3,10 @@ package main
 import (
 	"advent2018/common"
 	"fmt"
+	"strings"
 )
 
 func main() {
-
 	lines := common.ReadLines("./input.txt")
 	total := make(map[int]int)
 	for _, line := range lines {
@@ -25,8 +25,7 @@ func main() {
 			}
 		}
 	}
-	fmt.Printf("%v\n", total)
-	fmt.Printf("sum: %v\n", total[2]*total[3])
+	fmt.Printf("part 1: %v\n", total[2]*total[3])
 
 	for _, id := range lines {
 		for _, id2 := range lines {
@@ -34,17 +33,21 @@ func main() {
 				continue
 			}
 			misses := 0
-			var m []string
 			for i, v := range []byte(id) {
 				if id2[i] != v {
 					misses++
-					m = append(m, string(v))
 				}
 			}
-			if misses < 2 {
-				fmt.Printf("%s -> \n%s: %v: %v\n\n", id, id2, misses, m)
+			if misses == 1 {
+				var ans []string
+				for i, v := range id {
+					if id2[i] == byte(v) {
+						ans = append(ans, string(v))
+					}
+				}
+				fmt.Printf("part 2: %v\n", strings.Join(ans, ""))
+				return
 			}
 		}
 	}
-
 }
