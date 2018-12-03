@@ -7,11 +7,7 @@ import (
 	"strings"
 )
 
-func collides(x int, y int) bool {
-	return true
-}
-
-type tile struct {
+type claim struct {
 	id string
 	x  int
 	y  int
@@ -21,7 +17,7 @@ type tile struct {
 
 func main() {
 	lines := common.ReadLines("./input.txt")
-	var tiles []tile
+	var claims []claim
 	for _, line := range lines {
 		s := strings.Split(line, " ")
 		id, posStr, sizeStr := s[0], s[2], s[3]
@@ -32,18 +28,14 @@ func main() {
 		size := strings.Split(sizeStr, "x")
 		w, _ := strconv.Atoi(size[0])
 		h, _ := strconv.Atoi(size[1])
-
-		tiles = append(tiles, tile{id, x, y, w, h})
-		//log.Printf("id %s at %v,%v size %vx%v", id, x, y, w, h)
+		claims = append(claims, claim{id, x, y, w, h})
 	}
-	log.Printf("found %v tiles.", len(tiles))
 	gridWidth := 1000
 	overlaps := make(map[string]bool)
 	lookup := make(map[int]string)
-	grid := make([]int, gridWidth*gridWidth*100)
-	for _, t := range tiles {
+	grid := make([]int, gridWidth*gridWidth)
+	for _, t := range claims {
 		lx1, ly1, lx2, ly2 := t.x, t.y, t.x+t.w, t.y+t.h
-
 		// create grid to count overlaps of each square.
 		for x := lx1; x < lx2; x++ {
 			for y := ly1; y < ly2; y++ {
@@ -51,9 +43,8 @@ func main() {
 				grid[index]++
 				if grid[index] >= 2 {
 					overlaps[t.id] = true
-					overlaps[lookup[index]] = true
+					overlaps[lookup[index]] = true // previous claim is also overlapping.
 				}
-				// need to cache this, a the next overlap position will be overwritten.
 				lookup[index] = t.id
 			}
 		}
@@ -65,8 +56,7 @@ func main() {
 		}
 	}
 	log.Printf("Part 1: %v", sum)
-
-	for _, t := range tiles {
+	for _, t := range claims {
 		if _, ok := overlaps[t.id]; !ok {
 			log.Printf("Part 2: %v", t.id)
 		}
