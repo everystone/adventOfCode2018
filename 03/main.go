@@ -37,23 +37,29 @@ func main() {
 		//log.Printf("id %s at %v,%v size %vx%v", id, x, y, w, h)
 	}
 	log.Printf("found %v tiles.", len(tiles))
+	gridWidth := 1000
+	grid := make([]int, gridWidth*gridWidth*100)
 	collisions := 0
 	for _, t := range tiles {
-		for _, t2 := range tiles {
-			if t.id == t2.id {
-				continue
-			}
-			// check if t2 overlaps t1
-			lx1, ly1, lx2, ly2 := t.x, t.y, t.x+t.w, t.y-t.h
-			rx1, ry1, rx2, ry2 := t2.x, t2.y, t2.x+t2.w, t2.y-t2.h
+		// check if t2 overlaps t1
+		lx1, ly1, lx2, ly2 := t.x, t.y, t.x+t.w, t.y-t.h
+		//rx1, ry1, rx2, ry2 := t2.x, t2.y, t2.x+t2.w, t2.y-t2.h
 
-			if lx1 < rx2 && lx2 > rx1 && ly1 > ry2 && ly2 < ry1 {
-				collisions++
-				log.Printf("overlap: %v %v", t, t2)
-				log.Printf("%v %v", rx2-lx1, ry2-ly1)
-				return
+		for x := 1000 + lx1; x < lx2+1000; x++ {
+			for y := ly1 + 1000; y > ly2+1000; y-- {
+				//log.Printf("index: %v", y*gridWidth+x+1000)
+				grid[y*gridWidth+x+1000]++
+				//log.Printf("%v = %v", y*1000+x, grid[y*1000+x])
 			}
 		}
 	}
+	sum := 0
+	for a := 0; a < len(grid); a++ {
+		if grid[a] > 1 {
+			//log.Printf("a: %v", grid[a])
+			sum++
+		}
+	}
+	log.Printf("sum: %v", sum/2)
 	log.Printf("collisions: %v", collisions)
 }
