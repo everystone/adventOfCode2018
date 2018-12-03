@@ -1,7 +1,7 @@
 package main
 
 import (
-	"advent2018/common"
+	"adventOfCode2018/common"
 	"log"
 	"strconv"
 	"strings"
@@ -38,28 +38,37 @@ func main() {
 	}
 	log.Printf("found %v tiles.", len(tiles))
 	gridWidth := 1000
+	overlaps := make(map[string]bool)
+	lookup := make(map[int]string)
 	grid := make([]int, gridWidth*gridWidth*100)
-	collisions := 0
 	for _, t := range tiles {
-		// check if t2 overlaps t1
-		lx1, ly1, lx2, ly2 := t.x, t.y, t.x+t.w, t.y-t.h
-		//rx1, ry1, rx2, ry2 := t2.x, t2.y, t2.x+t2.w, t2.y-t2.h
+		lx1, ly1, lx2, ly2 := t.x, t.y, t.x+t.w, t.y+t.h
 
-		for x := 1000 + lx1; x < lx2+1000; x++ {
-			for y := ly1 + 1000; y > ly2+1000; y-- {
-				//log.Printf("index: %v", y*gridWidth+x+1000)
-				grid[y*gridWidth+x+1000]++
-				//log.Printf("%v = %v", y*1000+x, grid[y*1000+x])
+		// create grid to count overlaps of each square.
+		for x := lx1; x < lx2; x++ {
+			for y := ly1; y < ly2; y++ {
+				index := y*gridWidth + x
+				grid[index]++
+				if grid[index] >= 2 {
+					overlaps[t.id] = true
+					overlaps[lookup[index]] = true
+				}
+				// need to cache this, a the next overlap position will be overwritten.
+				lookup[index] = t.id
 			}
 		}
 	}
-	sum := 0
-	for a := 0; a < len(grid); a++ {
-		if grid[a] > 1 {
-			//log.Printf("a: %v", grid[a])
+	sum := 0 // 113966
+	for _, val := range grid {
+		if val >= 2 {
 			sum++
 		}
 	}
-	log.Printf("sum: %v", sum/2)
-	log.Printf("collisions: %v", collisions)
+	log.Printf("Part 1: %v", sum)
+
+	for _, t := range tiles {
+		if _, ok := overlaps[t.id]; !ok {
+			log.Printf("Part 2: %v", t.id)
+		}
+	}
 }
