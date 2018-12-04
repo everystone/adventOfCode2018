@@ -1,12 +1,18 @@
 package main
 
 import (
-	"advent2018/common"
-	"fmt"
+	"adventOfCode2018/common"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func main() {
+	log.SetLevel(log.DebugLevel)
+	log.SetFormatter(&log.TextFormatter{
+		FullTimestamp:   true,
+		TimestampFormat: "15:04:05",
+	})
 	lines := common.ReadLines("./input.txt")
 	total := make(map[int]int)
 	for _, line := range lines {
@@ -25,7 +31,7 @@ func main() {
 			}
 		}
 	}
-	fmt.Printf("part 1: %v\n", total[2]*total[3])
+	log.Infof("part 1: %v\n", total[2]*total[3])
 
 	for _, id := range lines {
 		for _, id2 := range lines {
@@ -45,7 +51,7 @@ func main() {
 						ans = append(ans, string(v))
 					}
 				}
-				fmt.Printf("part 2: %v\n", strings.Join(ans, ""))
+				log.Infof("part 2: %v\n", strings.Join(ans, ""))
 				return
 			}
 		}

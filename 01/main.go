@@ -1,7 +1,7 @@
 package main
 
 import (
-	"advent2018/common"
+	"adventOfCode2018/common"
 	"log"
 	"strconv"
 )
