@@ -12,7 +12,7 @@ import (
 type guard struct {
 	id      string
 	slept   int
-	minutes []int
+	minutes map[int]int
 }
 
 func getMin(line string) (int, error) {
@@ -33,8 +33,9 @@ func parseGuards(lines []string) map[string]*guard {
 			gid = s[3]
 			if _, ok := guards[gid]; !ok {
 				guards[gid] = &guard{
-					id:    gid,
-					slept: 0,
+					id:      gid,
+					slept:   0,
+					minutes: make(map[int]int),
 				}
 			}
 		}
@@ -43,7 +44,7 @@ func parseGuards(lines []string) map[string]*guard {
 			to, _ := getMin(lines[i])
 			guards[gid].slept += to - from
 			for j := from; j < to; j++ {
-				guards[gid].minutes = append(guards[gid].minutes, j)
+				guards[gid].minutes[j]++
 			}
 		}
 		if strings.Contains(status, "falls") {
@@ -59,6 +60,8 @@ func main() {
 	guards := parseGuards(lines)
 	max := 0
 	var sleeper *guard
+
+	// part 1
 	for _, g := range guards {
 		logrus.Debugf("%v slept %v min", g.id, g.slept)
 		if g.slept > max {
@@ -67,14 +70,9 @@ func main() {
 		}
 	}
 	logrus.Infof("Most sleepy guard: %v (%v minutes)", sleeper.id, sleeper.slept)
-	mm := make(map[int]int)
-	for _, v := range sleeper.minutes {
-		mm[v]++
-	}
-
 	max = 0
 	minute := 0
-	for k, v := range mm {
+	for k, v := range sleeper.minutes {
 		if v > max {
 			max = v
 			minute = k
@@ -85,28 +83,18 @@ func main() {
 	logrus.Infof("Part 1: %v", id*minute) // 87681
 
 	// part 2
-	type gs struct {
-		minutes map[int]int
-	}
-	sleepyGuards := make(map[*guard]*gs)
 	max = 0
 	minute = 0
 	var gg guard
 	for _, g := range guards {
-		for _, v := range g.minutes {
-			if _, ok := sleepyGuards[g]; !ok {
-				sleepyGuards[g] = &gs{
-					minutes: make(map[int]int),
-				}
-			}
-			sleepyGuards[g].minutes[v]++
-			if sleepyGuards[g].minutes[v] > max {
-				max = sleepyGuards[g].minutes[v]
-				minute = v
+		for m, v := range g.minutes {
+			if v > max {
+				max = v
+				minute = m
 				gg = *g
 			}
 		}
 	}
 	id, _ = strconv.Atoi(strings.Split(gg.id, "#")[1])
-	logrus.Infof("Part 2: %v", id*minute)
+	logrus.Infof("Part 2: %v", id*minute) // 136461
 }
