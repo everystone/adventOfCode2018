@@ -98,7 +98,7 @@ func main() {
 	sort.Strings(lines)
 	guards := parseGuards(lines)
 	p1 := part1(guards)
-	logrus.Infof("Part 1: %v", p1)
+	logrus.Infof("Part 1 : %v", p1)
 	p2 := part2(guards)
 	logrus.Infof("Part 2: %v", p2)
 }

@@ -1,8 +1,10 @@
 package common
 
 import (
+	"log"
 	"sort"
 	"strings"
+	"time"
 )
 
 func SortString(w string) string {
@@ -17,4 +19,21 @@ func Str2map(s string) map[byte]int {
 		chars[r]++
 	}
 	return chars
+}
+
+// returns key from map where value is highest
+func maxInt(m map[int]int) int {
+	max, key := 0, 0
+	for k, v := range m {
+		if v > max {
+			max = v
+			key = k
+		}
+	}
+	return key
+}
+
+func TimeTrack(start time.Time, name string) {
+	elapsed := time.Since(start)
+	log.Printf("%s took %s", name, elapsed)
 }

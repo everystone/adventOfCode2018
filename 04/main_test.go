@@ -4,6 +4,7 @@ import (
 	"adventOfCode2018/common"
 	"sort"
 	"testing"
+	"time"
 )
 
 func TestParseGuards(t *testing.T) {
@@ -40,4 +41,13 @@ func TestPart2(t *testing.T) {
 	if p2 != 136461 {
 		t.Errorf("Part1 failed: actual %v expected %v", p2, 136461)
 	}
+}
+
+func TestPerformance(t *testing.T) {
+	start := time.Now()
+	for i := 0; i < 100; i++ {
+		main()
+	}
+	elapsed := time.Since(start)
+	t.Logf("average speed %s", elapsed/100)
 }
