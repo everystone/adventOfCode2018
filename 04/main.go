@@ -54,14 +54,9 @@ func parseGuards(lines []string) map[string]*guard {
 	return guards
 }
 
-func main() {
-	lines := common.ReadLines("./input.txt")
-	sort.Strings(lines)
-	guards := parseGuards(lines)
-	max := 0
+func part1(guards map[string]*guard) int {
+	max, minute := 0, 0
 	var sleeper *guard
-
-	// part 1
 	for _, g := range guards {
 		logrus.Debugf("%v slept %v min", g.id, g.slept)
 		if g.slept > max {
@@ -70,8 +65,7 @@ func main() {
 		}
 	}
 	logrus.Infof("Most sleepy guard: %v (%v minutes)", sleeper.id, sleeper.slept)
-	max = 0
-	minute := 0
+	max, minute = 0, 0
 	for k, v := range sleeper.minutes {
 		if v > max {
 			max = v
@@ -80,11 +74,11 @@ func main() {
 	}
 	id, _ := strconv.Atoi(strings.Split(sleeper.id, "#")[1])
 	logrus.Infof("Minute most slept: %v (%v times)", minute, max)
-	logrus.Infof("Part 1: %v", id*minute) // 87681
+	return id * minute // 87681
+}
 
-	// part 2
-	max = 0
-	minute = 0
+func part2(guards map[string]*guard) int {
+	max, minute := 0, 0
 	var gg guard
 	for _, g := range guards {
 		for m, v := range g.minutes {
@@ -95,6 +89,16 @@ func main() {
 			}
 		}
 	}
-	id, _ = strconv.Atoi(strings.Split(gg.id, "#")[1])
-	logrus.Infof("Part 2: %v", id*minute) // 136461
+	id, _ := strconv.Atoi(strings.Split(gg.id, "#")[1])
+	return id * minute // 136461
+}
+
+func main() {
+	lines := common.ReadLines("./input.txt")
+	sort.Strings(lines)
+	guards := parseGuards(lines)
+	p1 := part1(guards)
+	logrus.Infof("Part 1: %v", p1)
+	p2 := part2(guards)
+	logrus.Infof("Part 2: %v", p2)
 }
