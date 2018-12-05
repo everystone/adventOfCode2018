@@ -3,3 +3,4 @@
 *.un~
 *.exe
 debug
+*.prof
