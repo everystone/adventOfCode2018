@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"sort"
 	"strconv"
 	"time"
 )
@@ -47,7 +48,15 @@ func main() {
 	for _, mem := range m.Members {
 		hasData := false
 
-		for day, v := range mem.Completion {
+		// map iteration is random, so sort first.
+		var keys []int
+		for day := range mem.Completion {
+			keys = append(keys, day)
+		}
+		sort.Ints(keys)
+
+		for _, day := range keys {
+			v := mem.Completion[day]
 			if len(v) == 2 {
 				hasData = true
 				i, _ := strconv.ParseInt(v[1].Timestamp, 10, 64)
@@ -66,7 +75,7 @@ func main() {
 				sum += i
 			}
 			fmt.Printf("%v avg:  \t%.2f minutes\n", mem.Name, sum/float64(len(times[mem.Name])))
-			fmt.Printf("-----------------------------------------------\n")
+			fmt.Printf("---------------------------------------------------\n")
 		}
 	}
 	// fmt.Printf("%v", m.Members["372116"])
