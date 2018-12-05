@@ -10,11 +10,7 @@ import (
 )
 
 // dabAcCaCBAcCcaDA
-func process(str string, remove string) (bool, string) {
-	if remove != "" {
-		str = strings.Replace(str, strings.ToLower(remove), "", -1)
-		str = strings.Replace(str, strings.ToUpper(remove), "", -1)
-	}
+func react(str string) (bool, string) {
 	l := len(str)
 	for i, c := range str {
 		if i == l-1 {
@@ -32,11 +28,15 @@ func process(str string, remove string) (bool, string) {
 	return false, str
 }
 
-func react(str string, unit string, results map[string]int, wg *sync.WaitGroup) {
+func process(str string, unit string, results map[string]int, wg *sync.WaitGroup) {
 	defer wg.Done()
 	running := true
+	if unit != "" {
+		str = strings.Replace(str, strings.ToLower(unit), "", -1)
+		str = strings.Replace(str, strings.ToUpper(unit), "", -1)
+	}
 	for running == true {
-		running, str = process(str, unit)
+		running, str = react(str)
 	}
 	logrus.Infof("result of unit %v: %v", unit, len(str))
 	results[unit] = len(str)
@@ -51,7 +51,7 @@ func main() {
 	var wg sync.WaitGroup
 	for _, l := range letters {
 		wg.Add(1)
-		go react(input, l, results, &wg)
+		go process(input, l, results, &wg)
 	}
 	wg.Wait()
 	min := len(input)

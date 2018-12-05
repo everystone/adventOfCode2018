@@ -5,9 +5,12 @@ import (
 	"time"
 )
 
+func TestM(t *testing.T) {
+	main()
+}
 func TestPerformance(t *testing.T) {
 	start := time.Now()
-	for i := 0; i < 100; i++ {
+	for i := 0; i < 10; i++ {
 		main()
 	}
 	elapsed := time.Since(start)
