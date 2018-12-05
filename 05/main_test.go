@@ -1,11 +1,10 @@
 package main
 
-import (
-	"testing"
-)
-
-func TestM(t *testing.T) {
+func Examplemain() {
 	main()
+	// Output:
+	// Part 1: 9296
+	// Part 2: 5534 (o)
 }
 
 // func TestPerformance(t *testing.T) {
