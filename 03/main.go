@@ -2,38 +2,28 @@ package main
 
 import (
 	"adventOfCode2018/common"
-	"strconv"
-	"strings"
+	"fmt"
+	"time"
 
 	"github.com/sirupsen/logrus"
 )
 
 type claim struct {
-	id int
-	x1 int
-	y1 int
-	x2 int
-	y2 int
+	id, x1, y1, x2, y2 int
 }
 
 func main() {
-	// defer common.TimeTrack(time.Now(), "main")
+	defer common.TimeTrack(time.Now(), "main")
 	lines := common.ReadLines("./input.txt")
 	var claims []claim
 	for _, line := range lines {
-		s := strings.Split(line, " ")
-		idStr, posStr, sizeStr := s[0], s[2], s[3]
-		posStr = strings.TrimRight(posStr, ":")
-		size := strings.Split(sizeStr, "x")
-		pos := strings.Split(posStr, ",")
-		x1, _ := strconv.Atoi(pos[0])
-		y1, _ := strconv.Atoi(pos[1])
-		x2, _ := strconv.Atoi(size[0])
-		y2, _ := strconv.Atoi(size[1])
+		var x1, x2, y1, y2, id int
+		fmt.Sscanf(line, "#%d @ %d,%d: %dx%d", &id, &x1, &y1, &x2, &y2)
 		x2 += x1
 		y2 += y1
-		id, _ := strconv.Atoi(strings.Split(idStr, "#")[1])
-		claims = append(claims, claim{id, x1, y1, x2, y2})
+		claim := claim{id, x1, y1, x2, y2}
+		claims = append(claims, claim)
+		// logrus.Info(claim)
 	}
 	gridWidth := 1000
 	exists := struct{}{}
