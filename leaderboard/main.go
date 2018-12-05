@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"strconv"
 	"time"
@@ -43,17 +42,31 @@ func main() {
 		panic(err)
 	}
 
-	for _, v := range m.Members {
-		log.Printf("%v", v.Name)
-		for day, v := range v.Completion {
-			log.Printf("Day %v", day)
-			for _, s := range v {
-				i, _ := strconv.ParseInt(s.Timestamp, 10, 64)
-				ts := time.Unix(i, 0)
-				log.Printf("%v", ts)
+	fmt.Printf("Part 2 completion times:\n")
+	times := make(map[string][]float64)
+	for _, mem := range m.Members {
+		hasData := false
+
+		for day, v := range mem.Completion {
+			if len(v) == 2 {
+				hasData = true
+				i, _ := strconv.ParseInt(v[1].Timestamp, 10, 64)
+				ts1 := time.Unix(i, 0)
+				i, _ = strconv.ParseInt(v[2].Timestamp, 10, 64)
+				ts2 := time.Unix(i, 0)
+				result := ts2.Sub(ts1).Minutes()
+				fmt.Printf("%v day %v p2: %.2f minutes\n", mem.Name, day, result)
+				times[mem.Name] = append(times[mem.Name], result)
 			}
+		}
+
+		if hasData {
+			var sum float64
+			for _, i := range times[mem.Name] {
+				sum += i
+			}
+			fmt.Printf("%v avg part2 time: %.2f minutes\n", mem.Name, sum/float64(len(times[mem.Name])))
 		}
 	}
 	// fmt.Printf("%v", m.Members["372116"])
-
 }
