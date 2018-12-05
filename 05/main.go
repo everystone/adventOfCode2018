@@ -3,6 +3,8 @@ package main
 import (
 	"adventOfCode2018/common"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/sirupsen/logrus"
 )
@@ -19,50 +21,48 @@ func process(str string, remove string) (bool, string) {
 			return false, str
 		}
 		s := string(c)
-
-		// logrus.Infof("checking %v & %v", strings.ToLower(s), strings.ToUpper(s))
 		if s == strings.ToLower(s) && string(str[i+1]) == strings.ToUpper(s) ||
 			s == strings.ToUpper(s) && string(str[i+1]) == strings.ToLower(s) {
 			// remove current + next
 			match := str[i : i+2]
 			//logrus.Infof("match: %v", match)
 			return true, strings.Replace(str, match, "", -1)
-
 		}
 	}
-	// for every char, check if the next one inverts it (if lower, next is upper, or opposite)
 	return false, str
 }
 
-func main() {
-
-	raw := common.ReadLines("./input.txt")[0]
-	input := raw
-
+func react(str string, unit string, results map[string]int, wg *sync.WaitGroup) {
+	defer wg.Done()
 	running := true
 	for running == true {
-		running, input = process(input, "")
+		running, str = process(str, unit)
 	}
+	logrus.Infof("result of unit %v: %v", unit, len(str))
+	results[unit] = len(str)
+}
 
-	logrus.Infof("Part 1: %v", len(input)) // 9296
+func main() {
+	defer common.TimeTrack(time.Now(), "main")
+	input := common.ReadLines("./input.txt")[0]
+	results := make(map[string]int)
+	letters := []string{"", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "s", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"}
 
-	letters := []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "s", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"}
-	min := len(raw)
-	best := ""
+	var wg sync.WaitGroup
 	for _, l := range letters {
-
-		input = raw
-		running = true
-		for running == true {
-			running, input = process(input, l)
-		}
-		result := len(input)
-		if result < min {
-			min = result
-			best = l
-		}
-		logrus.Infof("result of unit %v: %v", l, result)
-
+		wg.Add(1)
+		go react(input, l, results, &wg)
 	}
+	wg.Wait()
+	min := len(input)
+	best := ""
+	for k, v := range results {
+		if v < min {
+			min = v
+			best = k
+		}
+	}
+	logrus.Infof("Part 1: %v", results[""])    // 9296
 	logrus.Infof("Part 2: %v (%v)", min, best) // 5534, o
+	// 28 seconds -> 8 seconds after implementing goroutines & syncgroup.
 }
