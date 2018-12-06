@@ -3,7 +3,6 @@ package main
 import (
 	"adventOfCode2018/common"
 	"fmt"
-	"log"
 	"math"
 )
 
@@ -27,7 +26,7 @@ var coordinates []*coordinate
 var grid [400][400]*coordinate
 
 func main() {
-
+	// defer common.TimeTrack(time.Now(), "main")
 	lines := common.ReadLines("./input.txt")
 	for _, line := range lines {
 		var x, y int
@@ -36,7 +35,6 @@ func main() {
 		grid[p.x][p.y] = &p
 		coordinates = append(coordinates, &p)
 	}
-	fmt.Printf("num coordinates: %v\n", len(coordinates))
 	for x := 0; x < 400; x++ {
 		for y := 0; y < 400; y++ {
 			pos := coordinate{x, y, 0, false}
@@ -88,25 +86,22 @@ func main() {
 	}
 
 	max, numtrapped := 0, 0
-	var largest *coordinate
 	for _, c := range coordinates {
 		if c.trapped {
 			numtrapped++
 			if c.size > max {
 				max = c.size
-				largest = c
 			}
 		}
 	}
-	log.Printf("num trapped : %v\n", numtrapped)
-	log.Printf("largest trapped: %v: %v", largest, max) // 5626
+	//log.Printf("num trapped : %v\n", numtrapped)
+	fmt.Printf("Part 1: %v\n", max) // 5626
 
 	/*
 		What is the size of the region containing all locations which have a total distance to all given coordinates of less than 10000?
 	*/
 
-	var safe []*coordinate
-
+	size := 0
 	for x := 0; x < 400; x++ {
 		for y := 0; y < 400; y++ {
 			c1 := &coordinate{x, y, 0, false}
@@ -119,10 +114,11 @@ func main() {
 				total += dist
 			}
 			if total < 10000 {
-				safe = append(safe, c1)
+				size++
 			}
 		}
 	}
 
-	fmt.Printf("safe: %v\n", len(safe)) // 46554
+	fmt.Printf("Part 2: %v\n", size) // 46554
+	// initial run: 60 - 70 ms
 }

@@ -25,30 +25,37 @@ type member struct {
 }
 
 type members struct {
-	Members map[string]member `json:"members"`
+	Members map[string]*member `json:"members"`
 }
 
 func main() {
 
-	byteValue, err := ioutil.ReadFile("./users.json")
+	b, err := ioutil.ReadFile("./users.json")
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(0)
 	}
 
-	//fmt.Printf("%v", byteValue)
 	var m members
-	err = json.Unmarshal(byteValue, &m)
+	err = json.Unmarshal(b, &m)
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Printf("Part 2 completion times:\n")
+	// add extra whitespaces to short names, for cleaner output.
+	for _, m := range m.Members {
+		for len(m.Name) < 20 {
+			m.Name += " "
+		}
+	}
+
+	fmt.Printf("Name\t\t\tDay\tTime\t\tP1\t\tP2\n")
+	fmt.Printf("--------------------------------------------------------------------\n")
 	times := make(map[string][]float64)
 	for _, mem := range m.Members {
 		hasData := false
 
-		// map iteration is random, so sort first.
+		// go map iteration is random, so sort first.
 		var keys []int
 		for day := range mem.Completion {
 			keys = append(keys, day)
@@ -64,7 +71,7 @@ func main() {
 				i, _ = strconv.ParseInt(v[2].Timestamp, 10, 64)
 				ts2 := time.Unix(i, 0)
 				result := ts2.Sub(ts1).Minutes()
-				fmt.Printf("%v day %v\t%.2f minutes\t(%v)\n", mem.Name, day, result, ts2.Format("15:04:05"))
+				fmt.Printf("%v\t%v\t%.2f min\t(%v -> %v)\n", mem.Name, day, result, ts1.Format("15:04:05"), ts2.Format("15:04:05"))
 				times[mem.Name] = append(times[mem.Name], result)
 			}
 		}
@@ -74,8 +81,8 @@ func main() {
 			for _, i := range times[mem.Name] {
 				sum += i
 			}
-			fmt.Printf("%v avg:  \t%.2f minutes\n", mem.Name, sum/float64(len(times[mem.Name])))
-			fmt.Printf("---------------------------------------------------\n")
+			fmt.Printf("%v\tavg: \t%.2f min\n", mem.Name, sum/float64(len(times[mem.Name])))
+			fmt.Printf("--------------------------------------------------------------------\n")
 		}
 	}
 	// fmt.Printf("%v", m.Members["372116"])
