@@ -1,33 +1,57 @@
+
+class Stack {
+  constructor() {
+    this.items = []
+  }
+  pop() {
+    const item = this.items[this.items.length - 1]
+    this.items = this.items.slice(0, this.items.length - 1)
+    return item
+  }
+  peek() {
+    return this.items[this.items.length - 1]
+  }
+  push(val) {
+    this.items.push(val)
+  }
+  len() {
+    return this.items.length
+  }
+}
+
+
 var fs = require('fs');
 fs.readFile('input.txt', 'utf8', function (err, input) {
   if (err) throw err;
-  
   input = input.trimRight()
+
   const react = (str) => {
+    let s = new Stack()
     for (let i = 0; i < str.length; i++) {
-      if (i === str.Length - 1) {
-        return [false, str]
-      }
-      s = str[i]
-      if (s == s.toLowerCase() && str[i + 1] == s.toUpperCase() || s == s.toUpperCase() && str[i + 1] == s.toLowerCase()) {
-        str = str.replace(s + str[i + 1], "")
-        return [true, str]
+      c = str[i]
+      if (s.len() == 0) {
+        s.push(c)
+      } else {
+        last = s.peek()
+        if (last == c.toLowerCase() && c == c.toUpperCase() ||
+          last == c.toUpperCase() && c == c.toLowerCase()) {
+          s.pop()
+        } else {
+          s.push(c)
+        }
       }
     }
-    return [false, str]
+    return s.len()
   }
 
   function replaceAll(str, find, replace) {
     return str.replace(new RegExp(find, 'g'), replace);
   }
   const process = (str, unit) => {
-    let run = true
     str = replaceAll(str, unit, "")
     str = replaceAll(str, unit.toUpperCase(), "")
-    while (run) {
-      [run, str] = react(str)
-    }
-    console.log(`${unit}:  ${str.length}`)
+    const result = react(str)
+    console.log(`${unit}:  ${result}`)
   }
 
 
