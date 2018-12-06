@@ -28,6 +28,11 @@ type members struct {
 	Members map[string]*member `json:"members"`
 }
 
+func getTime(ts string) time.Time {
+	i, _ := strconv.ParseInt(ts, 10, 64)
+	return time.Unix(i, 0)
+}
+
 func main() {
 
 	b, err := ioutil.ReadFile("./users.json")
@@ -53,7 +58,6 @@ func main() {
 	fmt.Printf("--------------------------------------------------------------------\n")
 	times := make(map[string][]float64)
 	for _, mem := range m.Members {
-		hasData := false
 
 		// go map iteration is random, so sort first.
 		var keys []int
@@ -65,18 +69,15 @@ func main() {
 		for _, day := range keys {
 			v := mem.Completion[day]
 			if len(v) == 2 {
-				hasData = true
-				i, _ := strconv.ParseInt(v[1].Timestamp, 10, 64)
-				ts1 := time.Unix(i, 0)
-				i, _ = strconv.ParseInt(v[2].Timestamp, 10, 64)
-				ts2 := time.Unix(i, 0)
+				ts1 := getTime(v[1].Timestamp)
+				ts2 := getTime(v[2].Timestamp)
 				result := ts2.Sub(ts1).Minutes()
 				fmt.Printf("%v\t%v\t%.2f min\t(%v -> %v)\n", mem.Name, day, result, ts1.Format("15:04:05"), ts2.Format("15:04:05"))
 				times[mem.Name] = append(times[mem.Name], result)
 			}
 		}
 
-		if hasData {
+		if len(times[mem.Name]) > 0 {
 			var sum float64
 			for _, i := range times[mem.Name] {
 				sum += i

@@ -7,42 +7,43 @@ import (
 	"sync"
 	"time"
 
+	"github.com/golang-collections/collections/stack"
 	"github.com/sirupsen/logrus"
 )
 
-// dabAcCaCBAcCcaDA
-func react(str string) (bool, string) {
-	l := len(str)
-	for i, c := range str {
-		if i == l-1 {
-			return false, str
-		}
-		s := string(c)
-		unit := strmap[s]
-		if s == unit.lower && string(str[i+1]) == unit.upper ||
-			s == unit.upper && string(str[i+1]) == unit.lower {
-			// remove current + next
-			match := str[i : i+2]
-			// logrus.Infof("match: %v", match)
-			return true, strings.Replace(str, match, "", -1)
+func react(str string) int {
+	s := stack.New()
+	for _, ch := range str {
+		c := string(ch)
+		if s.Len() == 0 {
+			s.Push(c)
+		} else {
+			last := s.Peek()
+			current := string(c)
+			unit := strmap[current]
+			if last == unit.lower && current == unit.upper ||
+				last == unit.upper && current == unit.lower {
+				s.Pop()
+			} else {
+				s.Push(c)
+			}
 		}
 	}
-	return false, str
+	return s.Len()
 }
 
 func process(str string, unit string, results map[string]int, wg *sync.WaitGroup) {
 	defer wg.Done()
-	running := true
 	if unit != "" {
 		u := strmap[unit]
 		str = strings.Replace(str, u.lower, "", -1)
 		str = strings.Replace(str, u.upper, "", -1)
 	}
-	for running == true {
-		running, str = react(str)
-	}
-	logrus.Debugf("result of unit %v: %v", unit, len(str))
-	results[unit] = len(str)
+
+	result := react(str)
+
+	logrus.Debugf("result of unit %v: %v", unit, result)
+	results[unit] = result
 }
 
 type unit struct {
@@ -70,7 +71,6 @@ func main() {
 	input := common.ReadLines("./input.txt")[0]
 	strmap = make(map[string]unit)
 	createUnitMap(letters)
-	// fmt.Println(strmap)
 
 	results := make(map[string]int)
 
@@ -88,12 +88,13 @@ func main() {
 			best = k
 		}
 	}
-	fmt.Printf("Part 1: %v\n", results[""])  // 9296
-	fmt.Printf("Part 2: %v (%v)", min, best) // 5534, o
+	fmt.Printf("Part 1: %v\n", results[""])    // 9296
+	fmt.Printf("Part 2: %v (%v)\n", min, best) // 5534, o
 	//  initial 28 seconds
 	// -> 8 seconds after implementing goroutines & syncgroup.
 	// -> 6 seconds after removing unit from string before react loop.
-	// -> 3,8 seconds after caching upper/lower variants of chars in strmap.
+	// -> 3,3 seconds after caching upper/lower variants of chars in strmap.
+	// -> ~100ms after implementing react() using a stack
 }
 
 /**
@@ -127,5 +128,22 @@ Showing top 10 nodes out of 48
     1610ms  9.01% 68.44%     2440ms 13.65%  runtime.intstring
     1310ms  7.33% 75.77%     1310ms  7.33%  runtime.aeshashbody
      830ms  4.64% 80.41%      830ms  4.64%  runtime.encoderune
-     670ms  3.75% 84.16%      670ms  3.75%  runtime.memequal
+		 670ms  3.75% 84.16%      670ms  3.75%  runtime.memequal
+
+
+after using stack_
+
+Duration: 202ms, Total samples = 460ms (227.73%)
+Entering interactive mode (type "help" for commands, "o" for options)
+(pprof) top
+Showing nodes accounting for 340ms, 73.91% of 460ms total
+Showing top 10 nodes out of 57
+      flat  flat%   sum%        cum   cum%
+      70ms 15.22% 15.22%       70ms 15.22%  runtime.cgocall
+      50ms 10.87% 26.09%       50ms 10.87%  runtime.(*gcWork).dispose
+      50ms 10.87% 36.96%      140ms 30.43%  runtime.mallocgc
+      40ms  8.70% 45.65%       40ms  8.70%  runtime.osyield
+      30ms  6.52% 52.17%       30ms  6.52%  runtime.heapBitsForObject
+      20ms  4.35% 56.52%      230ms 50.00%  adventOfCode2018/05.react
+      20ms  4.35% 60.87%       20ms  4.35%  runtime.(*gcBits).bitp (inline)
 **/
