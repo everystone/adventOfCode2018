@@ -99,5 +99,30 @@ func main() {
 		}
 	}
 	log.Printf("num trapped : %v\n", numtrapped)
-	log.Printf("largest trapped: %v: %v", largest, max) // not 10250
+	log.Printf("largest trapped: %v: %v", largest, max) // 5626
+
+	/*
+		What is the size of the region containing all locations which have a total distance to all given coordinates of less than 10000?
+	*/
+
+	var safe []*coordinate
+
+	for x := 0; x < 400; x++ {
+		for y := 0; y < 400; y++ {
+			c1 := &coordinate{x, y, 0, false}
+			total := 0
+			for _, c2 := range coordinates {
+				if c1 == c2 {
+					continue
+				}
+				dist := manhattan(*c1, *c2)
+				total += dist
+			}
+			if total < 10000 {
+				safe = append(safe, c1)
+			}
+		}
+	}
+
+	fmt.Printf("safe: %v\n", len(safe)) // 46554
 }
