@@ -11,6 +11,8 @@ import (
 	"time"
 
 	chart "github.com/wcharczuk/go-chart"
+	"github.com/wcharczuk/go-chart/drawing"
+	"github.com/wcharczuk/go-chart/seq"
 )
 
 type star struct {
@@ -36,21 +38,101 @@ func getTime(ts string) time.Time {
 	return time.Unix(i, 0)
 }
 
-func draw(values []chart.Value) {
+func drawBasic(times map[string][]float64, numDays int) {
+
+	colors := []string{
+		"FF99E6", "CCFF1A", "FF1A66", "E6331A", "33FFCC",
+		"66994D", "B366CC", "4D8000", "B33300", "CC80CC",
+		"66664D", "991AFF", "E666FF", "4DB3FF", "1AB399",
+		"E666B3", "33991A", "CC9999", "B3B31A", "00E680",
+		"4D8066", "809980", "E6FF80", "1AFF33", "999933",
+		"FF3380", "CCCC00", "66E64D", "4D80CC", "9900B3",
+		"E64D66", "4DB380", "FF4D4D", "99E6E6", "6666FF",
+	}
+
+	var series []chart.Series
+	colorIndex := 0
+	for k, v := range times {
+		colorIndex++
+		for i := len(v); i < numDays; i++ {
+			v = append(v, 0)
+		}
+
+		color := drawing.ColorFromHex(colors[colorIndex])
+		con := chart.ContinuousSeries{
+			XValues: seq.Range(1.0, float64(numDays)),
+			YValues: v,
+			Name:    k,
+			Style: chart.Style{
+				Show:        true,
+				StrokeColor: color,
+				StrokeWidth: 2,
+			},
+		}
+		series = append(series, con)
+	}
+
+	graph := chart.Chart{
+		XAxis: chart.XAxis{
+			Name:      "Days",
+			NameStyle: chart.StyleShow(),
+			Style:     chart.StyleShow(),
+		},
+		YAxis: chart.YAxis{
+			Name:      "Minutes",
+			NameStyle: chart.StyleShow(),
+			Style: chart.Style{
+				Show: true,
+			},
+			Range: &chart.ContinuousRange{
+				Min: 0,
+				Max: 60,
+			},
+		},
+		Background: chart.Style{
+			Padding: chart.Box{
+				Top:  20,
+				Left: 260,
+			},
+			//FillColor: drawing.ColorBlack,
+		},
+		Canvas: chart.Style{
+			//FillColor: drawing.ColorBlack,
+		},
+		Series: series,
+	}
+	graph.Elements = []chart.Renderable{
+		chart.LegendLeft(&graph),
+	}
+
+	buffer := bytes.NewBuffer([]byte{})
+	graph.Render(chart.PNG, buffer)
+	ioutil.WriteFile("./charts/basic.png", buffer.Bytes(), 0644)
+}
+
+func draw(title string, values []chart.Value, limit float64) {
 	// https://github.com/wcharczuk/go-chart/blob/master/_examples/bar_chart/main.go
+
 	bar := chart.BarChart{
-		Title:      "Average time spent on part 2, in minutes.",
+		Title:      title,
 		TitleStyle: chart.StyleShow(),
 		Background: chart.Style{
 			Padding: chart.Box{
 				Top: 40,
 			},
+			//FillColor: drawing.ColorBlack,
 		},
-		Height:   512,
+		Height:   1024,
 		BarWidth: 100,
 		XAxis:    chart.StyleShow(),
 		YAxis: chart.YAxis{
-			Style: chart.StyleShow(),
+			Style:     chart.StyleShow(),
+			Name:      "Names",
+			NameStyle: chart.StyleShow(),
+			// Range: &chart.ContinuousRange{
+			// 	Min: 0,
+			// 	Max: limit,
+			// },
 		},
 		Bars: values,
 	}
@@ -84,7 +166,7 @@ func main() {
 	fmt.Printf("Name\t\t\tDay\tTime\t\tP1\t\tP2\n")
 	fmt.Printf("--------------------------------------------------------------------\n")
 	times := make(map[string][]float64)
-	var chartValues []chart.Value
+	var avgValues []chart.Value
 	for _, mem := range m.Members {
 
 		// go map iteration is random, so sort first.
@@ -105,7 +187,7 @@ func main() {
 			}
 		}
 
-		if len(times[mem.Name]) > 0 {
+		if len(times[mem.Name]) > 2 {
 			var sum float64
 			for _, i := range times[mem.Name] {
 				sum += i
@@ -114,15 +196,16 @@ func main() {
 			fmt.Printf("%v\tavg: \t%.2f min\n", mem.Name, avg)
 			fmt.Printf("--------------------------------------------------------------------\n")
 
-			if avg > 100 {
-				avg = 100
-			}
-			chartValues = append(chartValues, chart.Value{Value: avg, Label: mem.Name})
+			avgValues = append(avgValues, chart.Value{Value: avg, Label: mem.Name})
+
 		}
-		sort.Slice(chartValues, func(i, j int) bool {
-			return chartValues[i].Value > chartValues[j].Value
-		})
-		draw(chartValues)
 	}
+
+	sort.Slice(avgValues, func(i, j int) bool {
+		return avgValues[i].Value < avgValues[j].Value
+	})
+	draw("Top #5 part 2 average times", avgValues[0:5], 60)
+	// draw("Total time (part 2)", sumValues, 500)
+	//drawBasic(times, 12)
 	// fmt.Printf("%v", m.Members["372116"])
 }
